@@ -1,6 +1,33 @@
 ---
-# tasks file for Sonarqube
+# tasks file for roles/sonarqube
 - name: Update Repositories
   become: yes
   apt:
     update_cache: yes
+
+- name: Create Sonarqube automation directories
+  become: yes
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - '/root/.sonarqube_automate'
+
+- name: Upload sonarqube_init.sh File
+  become: yes
+  copy:
+    src: sonarqube_init.sh
+    dest: /root/.sonarqube_automate/sonarqube_init.sh
+
+- name: Change permissions on sonarqube_init.sh
+  become: yes
+  file:
+    path: /root/.sonarqube_automate/sonarqube_init.sh
+    mode: "u+rwx"
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Run Sonarqube Initialization script
+  become: yes
+  command: /root/.sonarqube_automate/sonarqube_init.sh
+  args:
+    executable: /bin/bash
